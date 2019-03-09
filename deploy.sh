@@ -1,0 +1,1 @@
+py -3 -u server.py >> legalizer.log 2>&1 &
