@@ -1,1 +1,1 @@
-py -3 -u server.py >> legalizer.log 2>&1 &
+waitress-serve --listen=127.0.01:5000 server:app >> legalizer.log 2>&1 &
