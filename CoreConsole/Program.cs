@@ -26,9 +26,16 @@ namespace CoreConsole
                 {
                     var alm = new AutoLegality(pk, args[Array.IndexOf(args, "--version") + 1]);
                     if (alm != null)
-                    {
+                    {   
+                        if (!args.Contains("-o"))
+                        {
                         string output = Util.CleanFileName(alm.GetLegalPKM().FileName);
                         File.WriteAllBytes($".\\output\\{output}", alm.GetLegalPKM().DecryptedBoxData);
+                        } else
+                        {
+                         string output = GetOutputPath(args)
+                         File.WriteAllBytes($".\\output\\{output}", alm.GetLegalPKM().DecryptedBoxData);   
+                        }
                     }
                     else Console.WriteLine("Invalid version");
                 }
@@ -46,6 +53,11 @@ namespace CoreConsole
         private static string GetFilePath(string[] args)
         {
             return args[Array.IndexOf(args, "-i") + 1];
+        }
+        
+        private static string GetOutputPath(string[] args)
+        {
+            return args[Array.IndexOf(args, "-o") + 1];
         }
     }
 }
