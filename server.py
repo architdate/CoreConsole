@@ -1,3 +1,5 @@
+#!/usr/bin/python -u
+
 import subprocess
 import os
 import io
@@ -15,6 +17,10 @@ def ensureFolderExists(folder):
 
 def datePath():
     return datetime.now().strftime("%Y%m%d")
+	
+@app.route('/', methods=['GET'])
+def hello():
+	return "PKSM"
 
 @app.route('/api/legalize', methods = ['POST'])
 def api_legalize():
@@ -28,7 +34,7 @@ def api_legalize():
             inputPath = os.path.join(storeFolder, str(uuid.uuid4()) + ".pkx")
             with open(inputPath, 'wb') as f:
                 f.write(request.data)
-            proc = subprocess.Popen(['CoreConsole/bin/Debug/CoreConsole.exe', '-alm', '--version', request.headers.get('Version'), '-i', inputPath], stdout=subprocess.PIPE, shell=True)
+            proc = subprocess.Popen(['CoreConsole\\bin\\Debug\\CoreConsole.exe', '-alm', '--version', request.headers.get('Version'), '-i', inputPath], stdout=subprocess.PIPE, shell=True)
             (out, err) = proc.communicate()
             with open(inputPath, 'rb') as f:
                 pkx = f.read()
