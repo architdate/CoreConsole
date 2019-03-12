@@ -33,8 +33,8 @@ namespace CoreConsole
                         File.WriteAllBytes($".\\output\\{output}", alm.GetLegalPKM().DecryptedBoxData);
                         } else
                         {
-                         string output = GetOutputPath(args)
-                         File.WriteAllBytes($".\\output\\{output}", alm.GetLegalPKM().DecryptedBoxData);   
+                            string output = GetOutputPath(args);
+                            File.WriteAllBytes($".\\output\\{output}", alm.GetLegalPKM().DecryptedBoxData);   
                         }
                     }
                     else Console.WriteLine("Invalid version");
