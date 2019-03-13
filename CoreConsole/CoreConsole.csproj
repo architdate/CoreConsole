@@ -48,8 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="APIs\AutoLegality.cs" />
-    <Compile Include="APIs\LegalityCheck.cs" />
+    <Compile Include="ConsoleLegalizer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

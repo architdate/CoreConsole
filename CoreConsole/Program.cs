@@ -1,76 +1,73 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using CoreConsole.APIs;
 using PKHeX.Core;
 
 namespace CoreConsole
 {
-    class ConsoleIndex
+    internal static class Program
     {
-        public static PKM pk;
-        static void Main(string[] args)
-        {
-            string appPath = Environment.CurrentDirectory;
+        private static readonly string appPath = Environment.CurrentDirectory;
+        private const string RequestLegalityCheck = "-l";
+        private const string RequestLegalization = "-alm";
 
-            Initialize(args);
-            if (args.Contains("-l"))
+        private static void Main(string[] args)
+        {
+            var pk = CreatePKMfromArgs(args);
+
+            if (args.Contains(RequestLegalityCheck))
             {
-                // Legality API calls
-                var lc = new LegalityCheck(pk);
-                if (args.Contains("--verbose")) Console.WriteLine(lc.VerboseReport);
-                else Console.WriteLine(lc.Report);
+                var lc = new LegalityAnalysis(pk);
+                var verbose = args.Contains("--verbose");
+                Console.WriteLine(lc.Report(verbose));
             }
-            if (args.Contains("-alm"))
+
+            if (!args.Contains(RequestLegalization))
+                return;
+
+            if (!args.Contains("--version"))
             {
-                if (!args.Contains("--version")) Console.WriteLine("Specify version with the [--version] tag");
-                else
-                {
-                    var alm = new AutoLegality(pk, args[Array.IndexOf(args, "--version") + 1]);
-                    if (alm != null)
-                    {   
-                        if (!args.Contains("-o"))
-                        {
-                            string output = Util.CleanFileName(alm.GetLegalPKM().FileName);
-                            File.WriteAllBytes(Path.Combine(appPath, "output", output), alm.GetLegalPKM().DecryptedBoxData);
-                        } else
-                        {
-                            string output = GetOutputPath(args);
-                            File.WriteAllBytes(output, alm.GetLegalPKM().DecryptedBoxData);   
-                        }
-                    }
-                    else Console.WriteLine("Invalid version");
-                }
+                Console.WriteLine("Specify version with the [--version] tag");
+                return;
             }
+
+            var ver = GetArgVal(args, "--version");
+            pk = ConsoleLegalizer.GetLegalPKM(pk, ver);
+            var outPath = GetOutputPath(args, pk);
+            File.WriteAllBytes(outPath, pk.DecryptedBoxData);
         }
-        
-        private static void Initialize(string[] args)
+
+        private static string GetOutputPath(string[] args, PKM p)
+        {
+            if (args.Contains("-o"))
+                return GetArgVal(args, "-o");
+            return Path.Combine(appPath, "output", Util.CleanFileName(p.FileName));
+        }
+
+        private static PKM CreatePKMfromArgs(string[] args)
         {
             // check -i for input and get file path in the next arg
             if (args.Contains("-i"))
             {
-                string path = GetFilePath(args);
-                byte[] data = File.ReadAllBytes(path);
-                pk = PKMConverter.GetPKMfromBytes(data);
+                var path = GetArgVal(args, "-i");
+                var data = File.ReadAllBytes(path);
+                return PKMConverter.GetPKMfromBytes(data);
             }
-            else
+
+            var gameStr = GetArgVal(args, "--version");
+            var parsed = Enum.TryParse<GameVersion>(gameStr, true, out var game);
+            if (!parsed)
             {
-                string set = args[Array.IndexOf(args, "--set") + 1];
-                bool valid = Enum.TryParse<GameVersion>(args[Array.IndexOf(args, "--version") + 1], true, out var game);
-                var template = PKMConverter.GetBlank(game.GetGeneration(), game);
-                template.ApplySetDetails(new ShowdownSet(set.Split(new string[] { "\\n" }, StringSplitOptions.None)));
-                pk = template;
+                Console.WriteLine("Invalid version specified: " + gameStr);
+                game = GameVersion.Any;
             }
+
+            var showdownSet = GetArgVal(args, "--set");
+            var template = PKMConverter.GetBlank(game.GetGeneration(), game);
+            template.ApplySetDetails(new ShowdownSet(showdownSet.Split(new [] { "\\n" }, StringSplitOptions.None)));
+            return template;
         }
 
-        private static string GetFilePath(string[] args)
-        {
-            return args[Array.IndexOf(args, "-i") + 1];
-        }
-        
-        private static string GetOutputPath(string[] args)
-        {
-            return args[Array.IndexOf(args, "-o") + 1];
-        }
+        private static string GetArgVal(string[] args, string modifier) => args[Array.IndexOf(args, modifier) + 1];
     }
 }
