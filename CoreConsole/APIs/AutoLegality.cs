@@ -31,7 +31,7 @@ namespace CoreConsole.APIs
         public PKM Legalize(PKM pk, GameVersion ver)
         {
             if (debug) Console.WriteLine(lc.Report);
-            var sav = SaveUtil.GetBlankSAV(ver, "ALM");
+            var sav = SaveUtil.GetBlankSAV(ver, "PKHeX");
             var updated = sav.Legalize(pk);
             lc = new LegalityCheck(updated);
             if (Legal)
