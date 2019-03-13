@@ -47,9 +47,20 @@ namespace CoreConsole
         private static void Initialize(string[] args)
         {
             // check -i for input and get file path in the next arg
-            string path = GetFilePath(args);
-            byte[] data = File.ReadAllBytes(path);
-            pk = PKMConverter.GetPKMfromBytes(data);
+            if (args.Contains("-i"))
+            {
+                string path = GetFilePath(args);
+                byte[] data = File.ReadAllBytes(path);
+                pk = PKMConverter.GetPKMfromBytes(data);
+            }
+            else
+            {
+                string set = args[Array.IndexOf(args, "--set") + 1];
+                bool valid = Enum.TryParse<GameVersion>(args[Array.IndexOf(args, "--version") + 1], true, out var game);
+                var template = PKMConverter.GetBlank(game.GetGeneration(), game);
+                template.ApplySetDetails(new ShowdownSet(set.Split(new string[] { "\\n" }, StringSplitOptions.None)));
+                pk = template;
+            }
         }
 
         private static string GetFilePath(string[] args)
