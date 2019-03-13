@@ -11,6 +11,8 @@ namespace CoreConsole
         public static PKM pk;
         static void Main(string[] args)
         {
+            string appPath = Environment.CurrentDirectory;
+
             Initialize(args);
             if (args.Contains("-l"))
             {
@@ -29,12 +31,12 @@ namespace CoreConsole
                     {   
                         if (!args.Contains("-o"))
                         {
-                        string output = Util.CleanFileName(alm.GetLegalPKM().FileName);
-                        File.WriteAllBytes($".\\output\\{output}", alm.GetLegalPKM().DecryptedBoxData);
+                            string output = Util.CleanFileName(alm.GetLegalPKM().FileName);
+                            File.WriteAllBytes(Path.Combine(appPath, "output", output), alm.GetLegalPKM().DecryptedBoxData);
                         } else
                         {
                             string output = GetOutputPath(args);
-                            File.WriteAllBytes($".\\output\\{output}", alm.GetLegalPKM().DecryptedBoxData);   
+                            File.WriteAllBytes(output, alm.GetLegalPKM().DecryptedBoxData);   
                         }
                     }
                     else Console.WriteLine("Invalid version");

@@ -4,8 +4,11 @@ import subprocess
 import os
 import io
 import uuid
+import sys
 from datetime import datetime
 from flask import Flask, url_for, request, jsonify, send_file
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 app = Flask(__name__)
 
@@ -31,14 +34,19 @@ def api_legalize():
                 return None
             storeFolder = os.path.join(DIR_OUTPUT, datePath())
             ensureFolderExists(storeFolder)
-            inputPath = os.path.join(storeFolder, str(uuid.uuid4()) + ".pkx")
+            uniqint = uuid.uuid4()
+            inputPath = os.path.join(storeFolder, str(uniqint) + ".pkx")
             with open(inputPath, 'wb') as f:
                 f.write(request.data)
-            proc = subprocess.Popen(['CoreConsole\\bin\\Debug\\CoreConsole.exe', '-alm', '--version', request.headers.get('Version'), '-i', inputPath], stdout=subprocess.PIPE, shell=True)
+            if os.name == 'nt':
+                proc = subprocess.Popen(['CoreConsole.exe', '-alm', '--version', request.headers.get('Version'), '-i', inputPath, '-o', inputPath], stdout=subprocess.PIPE, shell=True)
+            else:
+                proc = subprocess.Popen('mono CoreConsole.exe -alm --version {} -i "{}" -o "{}"'.format(request.headers.get('Version'), inputPath, inputPath), stdout=subprocess.PIPE, shell=True)
             (out, err) = proc.communicate()
+            fname = str(uniqint) + '.pkx'
             with open(inputPath, 'rb') as f:
                 pkx = f.read()
-            return send_file(io.BytesIO(pkx), attachment_filename="output.pkx")
+            return send_file(io.BytesIO(pkx), attachment_filename=fname)
     except Exception as e:
         print(e)
         return None
